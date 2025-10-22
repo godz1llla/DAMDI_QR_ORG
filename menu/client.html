@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню</title>
+    <style>
+        :root {
+            --orange-primary: #F37321;
+            --green-price: #34A853;
+            --bg-page: #FFFBF7;
+            --bg-content: #FFFFFF;
+            --bg-search: #F4F4F4;
+            --text-dark: #222222;
+            --text-secondary: #888888;
+            --text-light: #FFFFFF;
+            --border-color: #ECEEF3;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --border-radius-card: 16px;
+            --border-radius-small: 8px;
+            --shadow-card: 0 4px 15px rgba(200, 180, 170, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+        }
+        
+        .mobile-view {
+            max-width: 420px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background-color: var(--bg-content);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .menu-header {
+            padding: 20px 20px 15px 20px;
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-content);
+            z-index: 10;
+        }
+        .restaurant-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--orange-primary);
+            margin-bottom: 5px;
+        }
+        .table-info {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--bg-search);
+            border-radius: var(--border-radius-small);
+            padding: 10px 15px;
+        }
+        .search-bar input {
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .category-nav {
+            padding: 0 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 138px;
+            background-color: var(--bg-content);
+            z-index: 9;
+        }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .category-nav { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .category-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 5px;
+            margin-right: 20px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+        }
+        .category-btn.active { color: var(--text-dark); }
+        .category-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--orange-primary);
+            border-radius: 3px;
+        }
+        .category-counter {
+            background-color: #E0E0E0;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .category-btn.active .category-counter {
+            background-color: var(--orange-primary);
+            color: white;
+        }
+
+        .dishes-list {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .dish-card {
+            background-color: var(--bg-content);
+            border-radius: var(--border-radius-card);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dish-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+
+        .dish-content {
+            padding: 20px;
+        }
+        .dish-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .dish-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .dish-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dish-price {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--green-price);
+        }
+        .btn-add {
+            padding: 12px 25px;
+            background-color: var(--orange-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-small);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-add:hover { opacity: 0.9; }
+
+        .cart-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--orange-primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 5px 20px rgba(243, 115, 33, 0.4);
+            cursor: pointer;
+            display: none;
+            gap: 10px;
+            align-items: center;
+        }
+        .cart-button.visible { display: flex; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+        .modal-overlay.visible { display: flex; }
+        
+        .cart-modal {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            max-height: 80vh;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .cart-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .close-cart {
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .cart-item-price {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 5px;
+        }
+        .quantity-control button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .quantity-value {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .remove-item {
+            color: #E53935;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .cart-total {
+            padding: 20px 0;
+            border-top: 2px solid var(--border-color);
+            margin-top: 20px;
+        }
+        .cart-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .cart-total-price {
+            color: var(--green-price);
+        }
+
+        .order-button {
+            width: 100%;
+            padding: 15px;
+            background: var(--orange-primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .order-button:hover {
+            opacity: 0.9;
+        }
+        .order-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-view">
+        <div class="menu-header">
+            <h1 class="restaurant-name" id="restaurantName">Загрузка...</h1>
+            <p class="table-info" id="tableInfo">Столик №...</p>
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="Поиск по меню">
+            </div>
+        </div>
+
+        <nav class="category-nav" id="categoryNav"></nav>
+
+        <div class="dishes-list" id="dishesList"></div>
+
+        <button class="cart-button" id="cartButton">
+            🛒 Корзина • <span id="cartTotal">0 ₸</span>
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="cartModal">
+        <div class="cart-modal">
+            <div class="cart-header">
+                <h2>Ваш заказ</h2>
+                <span class="close-cart" onclick="closeCartModal()">×</span>
+            </div>
+            <div id="cartItems"></div>
+            <div class="cart-total">
+                <div class="cart-total-row">
+                    <span>Итого:</span>
+                    <span class="cart-total-price" id="cartTotalPrice">0 ₸</span>
+                </div>
+            </div>
+            <button class="order-button" id="placeOrderBtn">Оформить заказ</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const restaurantId = urlParams.get('restaurant_id') || 1;
+        const tableId = urlParams.get('table_id') || 1;
+
+        let menuData = [];
+        let cart = [];
+        let selectedCategory = null;
+
+        async function loadMenu() {
+            try {
+                const response = await fetch(`/api/menu/list.php?restaurant_id=${restaurantId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    menuData = data.menu;
+                    renderCategories();
+                    if (menuData.length > 0) {
+                        selectCategory(menuData[0].category.id);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading menu:', error);
+                document.getElementById('dishesList').innerHTML = '<div class="empty-state">Ошибка загрузки меню</div>';
+            }
+        }
+
+        function renderCategories() {
+            const nav = document.getElementById('categoryNav');
+            nav.innerHTML = '';
+            
+            menuData.forEach(section => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.dataset.categoryId = section.category.id;
+                btn.innerHTML = `
+                    <span>${section.category.name}</span>
+                    <span class="category-counter">${section.items.length}</span>
+                `;
+                btn.addEventListener('click', () => selectCategory(section.category.id));
+                nav.appendChild(btn);
+            });
+        }
+
+        function selectCategory(categoryId) {
+            selectedCategory = categoryId;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.categoryId == categoryId);
+            });
+            
+            renderDishes();
+        }
+
+        function renderDishes() {
+            const container = document.getElementById('dishesList');
+            container.innerHTML = '';
+            
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            const section = menuData.find(s => s.category.id == selectedCategory);
+            if (!section) return;
+            
+            let filteredItems = section.items;
+            if (searchQuery) {
+                filteredItems = filteredItems.filter(item => 
+                    item.name.toLowerCase().includes(searchQuery) ||
+                    (item.description && item.description.toLowerCase().includes(searchQuery))
+                );
+            }
+            
+            if (filteredItems.length === 0) {
+                container.innerHTML = '<div class="empty-state">Блюда не найдены</div>';
+                return;
+            }
+            
+            filteredItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'dish-card';
+                card.innerHTML = `
+                    ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" class="dish-image">` : '<div class="dish-image"></div>'}
+                    <div class="dish-content">
+                        <h3 class="dish-name">${item.name}</h3>
+                        <p class="dish-description">${item.description || ''}</p>
+                        <div class="dish-footer">
+                            <span class="dish-price">${parseFloat(item.price).toLocaleString('ru-RU')} ₸</span>
+                            <button class="btn-add" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price})">Добавить</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addToCart(itemId, itemName, itemPrice) {
+            const existingItem = cart.find(item => item.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    id: itemId,
+                    name: itemName,
+                    price: parseFloat(itemPrice),
+                    quantity: 1
+                });
+            }
+            
+            updateCart();
+        }
+
+        function updateCart() {
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('cartTotal').textContent = total.toLocaleString('ru-RU') + ' ₸';
+            
+            const cartButton = document.getElementById('cartButton');
+            if (cart.length > 0) {
+                cartButton.classList.add('visible');
+            } else {
+                cartButton.classList.remove('visible');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', renderDishes);
+
+        function showCartModal() {
+            renderCartModal();
+            document.getElementById('cartModal').classList.add('visible');
+        }
+
+        function closeCartModal() {
+            document.getElementById('cartModal').classList.remove('visible');
+        }
+
+        function renderCartModal() {
+            const container = document.getElementById('cartItems');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">Корзина пуста</p>';
+                document.getElementById('placeOrderBtn').disabled = true;
+                return;
+            }
+            
+            document.getElementById('placeOrderBtn').disabled = false;
+            
+            cart.forEach((item, index) => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${parseFloat(item.price).toLocaleString('ru-RU')} ₸</div>
+                    </div>
+                    <div class="cart-item-controls">
+                        <div class="quantity-control">
+                            <button onclick="decreaseQuantity(${index})">−</button>
+                            <span class="quantity-value">${item.quantity}</span>
+                            <button onclick="increaseQuantity(${index})">+</button>
+                        </div>
+                        <span class="remove-item" onclick="removeFromCart(${index})">🗑️</span>
+                    </div>
+                `;
+                container.appendChild(cartItem);
+            });
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('cartTotalPrice').textContent = total.toLocaleString('ru-RU') + ' ₸';
+        }
+
+        function increaseQuantity(index) {
+            cart[index].quantity++;
+            updateCart();
+            renderCartModal();
+        }
+
+        function decreaseQuantity(index) {
+            if (cart[index].quantity > 1) {
+                cart[index].quantity--;
+            } else {
+                cart.splice(index, 1);
+            }
+            updateCart();
+            renderCartModal();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+            renderCartModal();
+        }
+
+        document.getElementById('cartButton').addEventListener('click', () => {
+            showCartModal();
+        });
+
+        document.getElementById('cartModal').addEventListener('click', (e) => {
+            if (e.target.id === 'cartModal') {
+                closeCartModal();
+            }
+        });
+
+        document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+            if (cart.length === 0) {
+                alert('Корзина пуста');
+                return;
+            }
+            
+            const orderBtn = document.getElementById('placeOrderBtn');
+            orderBtn.disabled = true;
+            orderBtn.textContent = 'Оформляем...';
+            
+            const orderItems = cart.map(item => ({
+                menu_item_id: item.id,
+                quantity: item.quantity
+            }));
+            
+            try {
+                const response = await fetch('/api/orders/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        restaurant_id: restaurantId,
+                        table_id: tableId,
+                        items: orderItems
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    cart = [];
+                    updateCart();
+                    closeCartModal();
+                    
+                    alert(`Заказ №${data.order_id} успешно создан!\n\nСумма: ${parseFloat(data.total_amount).toLocaleString('ru-RU')} ₸\n\nОфициант скоро подойдёт к вашему столику.`);
+                } else {
+                    alert('Ошибка: ' + data.message);
+                    orderBtn.disabled = false;
+                    orderBtn.textContent = 'Оформить заказ';
+                }
+            } catch (error) {
+                alert('Ошибка подключения к серверу');
+                orderBtn.disabled = false;
+                orderBtn.textContent = 'Оформить заказ';
+            }
+        });
+
+        document.getElementById('tableInfo').textContent = `Столик №${tableId}`;
+        document.getElementById('restaurantName').textContent = 'Демо Ресторан';
+        
+        loadMenu();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,56 @@
+# Dependencies
+vendor/
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Database credentials (if stored separately)
+config/database.local.php
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.rar
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# Backups
+*.sql.backup
+*.bak
+backup/
+
+# Session files
+sessions/
+
+# Debug
+debug.log
+error_log
+php_errors.log
+
