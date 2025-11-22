@@ -171,8 +171,44 @@ export const getMyRestaurant = async (req: Request, res: Response) => {
 
 export const updateMyRestaurant = async (req: Request, res: Response) => {
   try {
-    if (!req.user || !req.user.restaurantId) {
-      return res.status(403).json({ success: false, message: 'Restaurant access required' });
+    // Логируем для диагностики
+    console.log('Update restaurant request:', {
+      user: req.user,
+      body: req.body,
+      restaurantId: req.user?.restaurantId,
+      role: req.user?.role
+    });
+
+    if (!req.user) {
+      console.error('No user in request');
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    if (!req.user.restaurantId) {
+      console.error('No restaurantId in user token:', {
+        userId: req.user.userId,
+        email: req.user.email,
+        role: req.user.role,
+        restaurantId: req.user.restaurantId
+      });
+      
+      // Попробуем получить restaurantId из базы данных
+      const [userRows] = await pool.execute(
+        'SELECT restaurant_id FROM users WHERE id = ? LIMIT 1',
+        [req.user.userId]
+      );
+      const users = userRows as any[];
+      
+      if (users.length > 0 && users[0].restaurant_id) {
+        console.log('Found restaurant_id in database, using it:', users[0].restaurant_id);
+        // Обновляем req.user для этого запроса
+        req.user.restaurantId = users[0].restaurant_id;
+      } else {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Restaurant access required. Please log out and log in again.' 
+        });
+      }
     }
 
     const { name, address, phone, whatsapp_number } = req.body;
@@ -182,6 +218,7 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
       [name, address, phone, whatsapp_number || null, req.user.restaurantId]
     );
 
+    console.log('Restaurant updated successfully:', req.user.restaurantId);
     res.json({ success: true, message: 'Ресторан обновлен' });
   } catch (error: any) {
     console.error('Update restaurant error:', error);

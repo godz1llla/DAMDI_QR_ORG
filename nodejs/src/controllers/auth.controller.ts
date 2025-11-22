@@ -44,11 +44,19 @@ export const login = async (req: Request, res: Response) => {
     const jwtSecret: string = process.env.JWT_SECRET || 'secret';
     const jwtExpiresIn: string | number = process.env.JWT_EXPIRES_IN || '7d';
     
+    // Логируем для диагностики
+    console.log('Creating JWT token:', {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      restaurant_id: user.restaurant_id
+    });
+    
     const payload: JWTPayload = {
       userId: user.id,
       email: user.email,
       role: user.role,
-      restaurantId: user.restaurant_id
+      restaurantId: user.restaurant_id || null
     };
     
     const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn } as jwt.SignOptions);

@@ -103,6 +103,9 @@ export const createOrder = async (req: Request, res: Response) => {
       // Отправляем WhatsApp уведомление (после освобождения connection)
       if (restaurant && restaurant.whatsapp_number) {
         try {
+          console.log('📱 Preparing WhatsApp notification for restaurant:', restaurant.name);
+          console.log('📱 WhatsApp number:', restaurant.whatsapp_number);
+          
           const orderData = {
             id: orderId,
             order_type: orderType,
@@ -114,18 +117,34 @@ export const createOrder = async (req: Request, res: Response) => {
           };
 
           const whatsappMessage = formatOrderForWhatsApp(orderData);
-          await sendWhatsAppMessage(restaurant.whatsapp_number, whatsappMessage);
+          console.log('📱 Message formatted, sending...');
+          
+          const sent = await sendWhatsAppMessage(restaurant.whatsapp_number, whatsappMessage);
+          
+          if (sent) {
+            console.log('✅ WhatsApp notification sent successfully');
+          } else {
+            console.log('⚠️ WhatsApp notification not sent (check configuration)');
+          }
         } catch (whatsappError) {
           // Не прерываем процесс если WhatsApp не отправился
-          console.error('Error sending WhatsApp notification:', whatsappError);
+          console.error('❌ Error sending WhatsApp notification:', whatsappError);
         }
+      } else {
+        console.log('⚠️ No WhatsApp number configured for restaurant:', restaurant?.name || 'unknown');
       }
 
       res.json({
         success: true,
         message: 'Заказ успешно создан',
         order_id: orderId,
-        total_amount: totalAmount
+        total_amount: totalAmount,
+        whatsapp_number: restaurant?.whatsapp_number || null,
+        order_type: orderType,
+        items: orderItems,
+        customer_phone: customer_phone || null,
+        delivery_address: delivery_address || null,
+        table_number: tableNumber || null
       });
     } catch (error) {
       await connection.rollback();
@@ -183,6 +202,10 @@ export const listOrders = async (req: Request, res: Response) => {
       return res.status(403).json({ success: false, message: 'Restaurant access required' });
     }
 
+    // Для STAFF показываем только заказы в ресторане (DINE_IN), доставка идет только в WhatsApp
+    // Для ADMIN показываем все заказы
+    const orderTypeFilter = req.user.role === UserRole.STAFF ? "AND o.order_type = 'DINE_IN'" : '';
+
     const [rows] = await pool.execute(`
       SELECT o.*, t.table_number,
              GROUP_CONCAT(
@@ -193,7 +216,7 @@ export const listOrders = async (req: Request, res: Response) => {
       LEFT JOIN tables t ON o.table_id = t.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN menu_items mi ON oi.menu_item_id = mi.id
-      WHERE o.restaurant_id = ?
+      WHERE o.restaurant_id = ? ${orderTypeFilter}
       GROUP BY o.id
       ORDER BY o.created_at DESC
       LIMIT 100
@@ -232,6 +255,10 @@ export const pollOrders = async (req: Request, res: Response) => {
 
     const lastId = parseInt(req.query.last_id as string) || 0;
 
+    // Для STAFF показываем только заказы в ресторане (DINE_IN), доставка идет только в WhatsApp
+    // Для ADMIN показываем все заказы
+    const orderTypeFilter = req.user.role === UserRole.STAFF ? "AND o.order_type = 'DINE_IN'" : '';
+
     const [rows] = await pool.execute(`
       SELECT o.*, t.table_number,
              GROUP_CONCAT(
@@ -242,7 +269,7 @@ export const pollOrders = async (req: Request, res: Response) => {
       LEFT JOIN tables t ON o.table_id = t.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN menu_items mi ON oi.menu_item_id = mi.id
-      WHERE o.restaurant_id = ? AND o.id > ? AND o.status IN ('NEW', 'PREPARING')
+      WHERE o.restaurant_id = ? AND o.id > ? AND o.status IN ('NEW', 'PREPARING') ${orderTypeFilter}
       GROUP BY o.id
       ORDER BY o.created_at ASC
     `, [req.user.restaurantId, lastId]);

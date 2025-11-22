@@ -106,6 +106,11 @@
   border: 2px solid var(--dark-blue);
 }
 
+.landing-page .btn-large {
+  padding: 16px 40px;
+  font-size: 16px;
+}
+
 /* --- 2. Хедер --- */
 .landing-page .main-header {
   position: sticky;
@@ -569,5 +574,353 @@
 .landing-page .footer-bottom-links a {
   color: #ccc;
   margin-left: 20px;
+}
+
+/* --- Адаптивность для планшетов (max-width: 768px) --- */
+@media (max-width: 768px) {
+  .landing-page section {
+    padding: 50px 0;
+  }
+
+  .landing-page h1 {
+    font-size: 36px;
+  }
+
+  .landing-page h2 {
+    font-size: 28px;
+  }
+
+  .landing-page .container {
+    padding: 0 20px;
+  }
+
+  /* Хедер */
+  .landing-page .header-actions {
+    gap: 10px;
+  }
+
+  .landing-page .header-actions .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .landing-page .logo-text {
+    font-size: 16px;
+  }
+
+  /* Hero */
+  .landing-page .hero {
+    padding: 60px 0;
+  }
+
+  .landing-page .hero h1 {
+    font-size: 32px;
+  }
+
+  .landing-page .hero p {
+    font-size: 16px;
+  }
+
+  .landing-page .hero-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .landing-page .hero-buttons .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .landing-page .social-proof {
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+  }
+
+  .landing-page .proof-item {
+    min-width: 120px;
+  }
+
+  /* Features */
+  .landing-page .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  /* Steps */
+  .landing-page .steps-container {
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+
+  /* Pricing */
+  .landing-page .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .landing-page .price-card.popular {
+    transform: none;
+  }
+
+  /* Testimonials */
+  .landing-page .testimonials-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  /* Footer */
+  .landing-page .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+
+  .landing-page .footer-bottom {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .landing-page .footer-bottom-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .landing-page .footer-bottom-links a {
+    margin-left: 0;
+  }
+
+  /* CTA */
+  .landing-page .cta {
+    padding: 40px 20px;
+  }
+}
+
+/* --- Адаптивность для мобильных (max-width: 480px) --- */
+@media (max-width: 480px) {
+  .landing-page section {
+    padding: 40px 0;
+  }
+
+  .landing-page h1 {
+    font-size: 28px;
+    line-height: 1.3;
+  }
+
+  .landing-page h2 {
+    font-size: 24px;
+  }
+
+  .landing-page .container {
+    padding: 0 15px;
+  }
+
+  /* Хедер */
+  .landing-page .header-content {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .landing-page .logo-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .landing-page .logo-text {
+    font-size: 14px;
+  }
+
+  .landing-page .header-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .landing-page .header-actions .btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Hero */
+  .landing-page .hero {
+    padding: 40px 0;
+  }
+
+  .landing-page .hero h1 {
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+
+  .landing-page .hero p {
+    font-size: 15px;
+    margin-bottom: 25px;
+  }
+
+  .landing-page .special-offer {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-bottom: 15px;
+  }
+
+  .landing-page .hero-buttons {
+    margin-bottom: 40px;
+  }
+
+  .landing-page .hero-buttons .btn {
+    max-width: 100%;
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+
+  .landing-page .social-proof {
+    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .landing-page .proof-item {
+    text-align: center;
+  }
+
+  .landing-page .proof-item .value {
+    font-size: 20px;
+  }
+
+  /* Features */
+  .landing-page .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .landing-page .feature-card {
+    padding: 20px;
+  }
+
+  .landing-page .feature-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .landing-page .feature-card h3 {
+    font-size: 18px;
+  }
+
+  /* Steps */
+  .landing-page .steps-container {
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .landing-page .step-item .icon {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+
+  .landing-page .step-item h3 {
+    font-size: 16px;
+  }
+
+  .landing-page .step-item p {
+    font-size: 13px;
+    max-width: 100%;
+  }
+
+  /* Pricing */
+  .landing-page .pricing-grid {
+    gap: 25px;
+  }
+
+  .landing-page .price-card {
+    padding: 25px 20px;
+  }
+
+  .landing-page .price-card h3 {
+    font-size: 24px;
+  }
+
+  .landing-page .price-card .price {
+    font-size: 20px;
+  }
+
+  .landing-page .tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    top: -12px;
+    right: 15px;
+  }
+
+  /* Testimonials */
+  .landing-page .testimonials-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .landing-page .testimonial-card {
+    padding: 20px;
+  }
+
+  /* FAQ */
+  .landing-page .faq {
+    padding: 50px 0;
+  }
+
+  .landing-page .faq-item {
+    padding: 15px;
+  }
+
+  .landing-page .faq-question {
+    font-size: 15px;
+  }
+
+  .landing-page .faq-icon {
+    font-size: 20px;
+    margin-left: 10px;
+  }
+
+  .landing-page .faq-answer p {
+    font-size: 14px;
+  }
+
+  /* CTA */
+  .landing-page .cta {
+    padding: 30px 15px;
+  }
+
+  .landing-page .cta h2 {
+    font-size: 22px;
+  }
+
+  .landing-page .cta p {
+    font-size: 14px;
+  }
+
+  .landing-page .cta .btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Footer */
+  .landing-page .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .landing-page .footer-about p {
+    max-width: 100%;
+  }
+
+  .landing-page .footer-col {
+    margin-bottom: 10px;
+  }
+
+  .landing-page .footer-bottom {
+    font-size: 12px;
+  }
 }
 

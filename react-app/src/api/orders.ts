@@ -19,7 +19,18 @@ export interface UpdateOrderStatusRequest {
 }
 
 export const ordersApi = {
-  create: async (data: CreateOrderRequest): Promise<{ success: boolean; message: string; order_id: number; total_amount: number }> => {
+  create: async (data: CreateOrderRequest): Promise<{ 
+    success: boolean; 
+    message: string; 
+    order_id: number; 
+    total_amount: number;
+    whatsapp_number?: string | null;
+    order_type?: string;
+    items?: Array<{ name: string; quantity: number; price: number }>;
+    customer_phone?: string | null;
+    delivery_address?: string | null;
+    table_number?: string | null;
+  }> => {
     const response = await apiClient.post('/orders', data);
     return response.data;
   },

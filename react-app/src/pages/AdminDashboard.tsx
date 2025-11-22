@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { restaurantsApi } from '../api/restaurants';
 import { menuApi, MenuResponse } from '../api/menu';
@@ -65,6 +65,8 @@ const AdminDashboard: React.FC = () => {
   });
   const [statsPeriod, setStatsPeriod] = useState<'today' | 'week' | 'month'>('today');
   const [statsData, setStatsData] = useState<any>(null);
+  const isEditingSettings = useRef(false);
+  const settingsLoadedRef = useRef(false);
 
   useEffect(() => {
     loadData();
@@ -81,10 +83,17 @@ const AdminDashboard: React.FC = () => {
     } else if (activeTab === 'staff') {
       loadStaff();
     } else if (activeTab === 'settings') {
-      loadRestaurant();
-      loadStats('today');
+      // Загружаем данные только при первом открытии вкладки или если не редактируем
+      if (!isEditingSettings.current && !settingsLoadedRef.current) {
+        loadRestaurant();
+        loadStats('today');
+        settingsLoadedRef.current = true;
+      }
+    } else {
+      // При переключении на другую вкладку сбрасываем флаг
+      settingsLoadedRef.current = false;
     }
-  }, [activeTab, restaurant]);
+  }, [activeTab]);
 
   const loadData = async () => {
     try {
@@ -176,17 +185,25 @@ const AdminDashboard: React.FC = () => {
   };
 
   const loadRestaurant = async () => {
+    // Не загружаем если редактируем форму
+    if (isEditingSettings.current) {
+      return;
+    }
+    
     try {
       const res = await restaurantsApi.getMy();
       if (res.success) {
         setRestaurant(res.restaurant);
-        setSettings({
-          name: res.restaurant.name,
-          address: res.restaurant.address || '',
-          phone: res.restaurant.phone || '',
-          whatsapp_number: res.restaurant.whatsapp_number || '',
-          plan: res.restaurant.plan === 'PREMIUM' ? 'Premium' : 'Бесплатный',
-        });
+        // Обновляем settings только если не редактируем
+        if (!isEditingSettings.current) {
+          setSettings({
+            name: res.restaurant.name,
+            address: res.restaurant.address || '',
+            phone: res.restaurant.phone || '',
+            whatsapp_number: res.restaurant.whatsapp_number || '',
+            plan: res.restaurant.plan === 'PREMIUM' ? 'Premium' : 'Бесплатный',
+          });
+        }
       }
     } catch (error) {
       console.error('Error loading restaurant:', error);
@@ -388,17 +405,34 @@ const AdminDashboard: React.FC = () => {
 
   const handleUpdateSettings = async (e: React.FormEvent) => {
     e.preventDefault();
+    isEditingSettings.current = false; // Разрешаем обновление после сохранения
+    
     try {
-      await restaurantsApi.updateMy({
+      const updateData = {
         name: settings.name,
-        address: settings.address,
-        phone: settings.phone,
-        whatsapp_number: settings.whatsapp_number,
-      });
+        address: settings.address || '',
+        phone: settings.phone || '',
+        whatsapp_number: settings.whatsapp_number || '',
+      };
+      
+      await restaurantsApi.updateMy(updateData);
       alert('Настройки успешно сохранены');
-      loadRestaurant();
+      
+      // Перезагружаем данные с сервера после успешного сохранения
+      const res = await restaurantsApi.getMy();
+      if (res.success) {
+        setRestaurant(res.restaurant);
+        setSettings({
+          name: res.restaurant.name,
+          address: res.restaurant.address || '',
+          phone: res.restaurant.phone || '',
+          whatsapp_number: res.restaurant.whatsapp_number || '',
+          plan: res.restaurant.plan === 'PREMIUM' ? 'Premium' : 'Бесплатный',
+        });
+      }
     } catch (error: any) {
       alert('Ошибка: ' + (error.response?.data?.message || 'Не удалось сохранить настройки'));
+      isEditingSettings.current = true; // Возвращаем флаг редактирования при ошибке
     }
   };
 
@@ -753,11 +787,28 @@ const AdminDashboard: React.FC = () => {
                     WhatsApp номер <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 400 }}>(для уведомлений о заказах)</span>
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     name="whatsapp_number"
                     placeholder="+7 777 123-45-67"
-                    value={settings.whatsapp_number}
-                    onChange={(e) => setSettings({ ...settings, whatsapp_number: e.target.value })}
+                    value={settings.whatsapp_number || ''}
+                    onFocus={() => {
+                      isEditingSettings.current = true;
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      isEditingSettings.current = true;
+                      setSettings((prev) => {
+                        // Сохраняем все предыдущие значения и обновляем только whatsapp_number
+                        return { ...prev, whatsapp_number: value };
+                      });
+                    }}
+                    onBlur={() => {
+                      // Небольшая задержка чтобы не конфликтовать с submit
+                      setTimeout(() => {
+                        isEditingSettings.current = false;
+                      }, 200);
+                    }}
+                    autoComplete="off"
                     style={{ width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '5px' }}>

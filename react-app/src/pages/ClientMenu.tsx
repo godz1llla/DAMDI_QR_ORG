@@ -31,6 +31,17 @@ const ClientMenu: React.FC = () => {
     address: '',
     phone: '',
   });
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsAppData, setWhatsAppData] = useState<{
+    whatsapp_number: string;
+    order_id: number;
+    total_amount: number;
+    items: Array<{ name: string; quantity: number; price: number }>;
+    customer_phone?: string;
+    delivery_address?: string;
+    table_number?: string;
+    order_type: string;
+  } | null>(null);
 
   useEffect(() => {
     if (restaurantId) {
@@ -166,13 +177,33 @@ const ClientMenu: React.FC = () => {
         setCart([]);
         setShowCartModal(false);
         setShowDeliveryModal(false);
+        
+        // Если есть WhatsApp номер - показываем модалку с кнопкой
+        if (res.whatsapp_number) {
+          setWhatsAppData({
+            whatsapp_number: res.whatsapp_number,
+            order_id: res.order_id,
+            total_amount: res.total_amount,
+            items: res.items || cart.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price
+            })),
+            customer_phone: res.customer_phone || undefined,
+            delivery_address: res.delivery_address || undefined,
+            table_number: res.table_number || undefined,
+            order_type: res.order_type || orderType
+          });
+          setShowWhatsAppModal(true);
+        } else {
+          // Если нет WhatsApp - показываем обычное сообщение
+          const message = orderType === 'DELIVERY'
+            ? `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nЗаказ будет доставлен по адресу: ${deliveryData.address}`
+            : `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nОфициант скоро подойдёт к вашему столику.`;
+          alert(message);
+        }
+        
         setDeliveryData({ address: '', phone: '' });
-        
-        const message = orderType === 'DELIVERY'
-          ? `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nЗаказ будет доставлен по адресу: ${deliveryData.address}`
-          : `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nОфициант скоро подойдёт к вашему столику.`;
-        
-        alert(message);
       } else {
         alert('Ошибка: ' + res.message);
       }
@@ -468,6 +499,134 @@ const ClientMenu: React.FC = () => {
                 }}
               >
                 Назад к корзине
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно WhatsApp */}
+      {showWhatsAppModal && whatsAppData && (
+        <div
+          className={`modal-overlay visible`}
+          onClick={(e) => e.target === e.currentTarget && setShowWhatsAppModal(false)}
+        >
+          <div className="cart-modal" style={{ maxWidth: '500px' }}>
+            <div className="cart-header">
+              <h2>📱 Отправить заказ в WhatsApp</h2>
+              <button className="close-cart" onClick={() => setShowWhatsAppModal(false)}>
+                ×
+              </button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ 
+                padding: '15px', 
+                background: '#e8f5e9', 
+                borderRadius: '8px',
+                marginBottom: '20px',
+                border: '2px solid #4caf50'
+              }}>
+                <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '10px', color: '#2e7d32' }}>
+                  ✅ Заказ №{whatsAppData.order_id} создан!
+                </div>
+                <div style={{ fontSize: '16px', marginBottom: '5px' }}>
+                  Сумма: <strong>{parseFloat(whatsAppData.total_amount.toString()).toLocaleString('ru-RU')} ₸</strong>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '15px' }}>
+                  Нажмите кнопку ниже, чтобы открыть WhatsApp с готовым текстом заказа и отправить его ресторану:
+                </p>
+              </div>
+
+              <div style={{ 
+                padding: '15px', 
+                background: 'var(--bg-page)', 
+                borderRadius: '8px',
+                marginBottom: '20px',
+                fontSize: '12px',
+                color: 'var(--text-secondary)'
+              }}>
+                <div style={{ marginBottom: '8px' }}><strong>Состав заказа:</strong></div>
+                {whatsAppData.items.map((item, index) => (
+                  <div key={index} style={{ marginBottom: '5px' }}>
+                    {index + 1}. {item.name} x{item.quantity} = {(item.price * item.quantity).toLocaleString('ru-RU')} ₸
+                  </div>
+                ))}
+                {whatsAppData.delivery_address && (
+                  <>
+                    <div style={{ marginTop: '10px', marginBottom: '5px' }}><strong>Адрес доставки:</strong></div>
+                    <div>{whatsAppData.delivery_address}</div>
+                  </>
+                )}
+                {whatsAppData.customer_phone && (
+                  <>
+                    <div style={{ marginTop: '10px', marginBottom: '5px' }}><strong>Телефон:</strong></div>
+                    <div>{whatsAppData.customer_phone}</div>
+                  </>
+                )}
+                {whatsAppData.table_number && (
+                  <>
+                    <div style={{ marginTop: '10px', marginBottom: '5px' }}><strong>Столик:</strong></div>
+                    <div>№{whatsAppData.table_number}</div>
+                  </>
+                )}
+              </div>
+            </div>
+            <div style={{ padding: '0 20px 20px' }}>
+              <a
+                href={`https://wa.me/${whatsAppData.whatsapp_number.replace(/[+\s-()]/g, '')}?text=${encodeURIComponent(
+                  `📦 НОВЫЙ ЗАКАЗ #${whatsAppData.order_id}\n\n` +
+                  `${whatsAppData.order_type === 'DELIVERY' ? '🚚 ДОСТАВКА' : '🍽️ В РЕСТОРАНЕ'}\n` +
+                  `💰 Сумма: ${parseFloat(whatsAppData.total_amount.toString()).toLocaleString('ru-RU')} ₸\n` +
+                  `🕐 ${new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}\n\n` +
+                  (whatsAppData.order_type === 'DELIVERY' 
+                    ? (whatsAppData.customer_phone ? `📞 Телефон: ${whatsAppData.customer_phone}\n` : '') +
+                      (whatsAppData.delivery_address ? `📍 Адрес: ${whatsAppData.delivery_address}\n\n` : '')
+                    : (whatsAppData.table_number ? `🍽️ Столик: №${whatsAppData.table_number}\n\n` : '')
+                  ) +
+                  `*Состав заказа:*\n` +
+                  whatsAppData.items.map((item, index) => 
+                    `${index + 1}. ${item.name} x${item.quantity} = ${(item.price * item.quantity).toLocaleString('ru-RU')} ₸`
+                  ).join('\n') +
+                  `\n\n💵 *Итого: ${parseFloat(whatsAppData.total_amount.toString()).toLocaleString('ru-RU')} ₸*`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '15px',
+                  background: '#25D366',
+                  color: 'white',
+                  textAlign: 'center',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  marginBottom: '10px',
+                }}
+                onClick={() => {
+                  setTimeout(() => setShowWhatsAppModal(false), 500);
+                }}
+              >
+                📱 Открыть в WhatsApp
+              </a>
+              <button
+                onClick={() => setShowWhatsAppModal(false)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  background: 'white',
+                  color: 'var(--text-dark)',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Закрыть
               </button>
             </div>
           </div>

@@ -35,68 +35,88 @@ export async function sendWhatsAppMessage(phone: string, message: string): Promi
     // Форматируем номер (убираем + и пробелы)
     const cleanPhone = phone.replace(/[+\s-()]/g, '');
     
-    // Для разработки - просто логируем
-    // В продакшене здесь должен быть вызов реального API
-    if (process.env.NODE_ENV === 'development') {
-      console.log('\n📱 ========== WHATSAPP MESSAGE (DEV MODE) ==========');
-      console.log(`To: ${cleanPhone}`);
-      console.log(`Message:\n${message}`);
-      console.log('===============================================\n');
-      
-      // В разработке просто возвращаем успех
-      return true;
-    }
-
-    // Пример использования с Twilio (раскомментировать и настроить)
-    /*
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.TWILIO_WHATSAPP_FROM; // например: whatsapp:+14155238886
+    console.log('\n📱 ========== WHATSAPP MESSAGE ==========');
+    console.log(`To: ${cleanPhone}`);
+    console.log(`Message:\n${message}`);
     
-    if (!accountSid || !authToken || !fromNumber) {
-      console.error('Twilio credentials not configured');
-      return false;
-    }
-
-    const client = require('twilio')(accountSid, authToken);
-    
-    await client.messages.create({
-      from: fromNumber,
-      to: `whatsapp:+${cleanPhone}`,
-      body: message
-    });
-    */
-
-    // Пример с Green API (популярный в СНГ)
-    /*
+    // ПРИОРИТЕТ 1: Пробуем Green API (популярный в СНГ) - БЕСПЛАТНЫЙ для тестирования
     const greenApiId = process.env.GREEN_API_ID;
     const greenApiToken = process.env.GREEN_API_TOKEN;
     
-    if (!greenApiId || !greenApiToken) {
-      console.error('Green API credentials not configured');
-      return false;
+    if (greenApiId && greenApiToken) {
+      try {
+        console.log('📱 Пытаюсь отправить через Green API...');
+        const response = await fetch(`https://api.green-api.com/waInstance${greenApiId}/sendMessage/${greenApiToken}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chatId: `${cleanPhone}@c.us`,
+            message: message
+          })
+        });
+
+        const responseData = await response.json();
+        
+        if (response.ok && responseData.idMessage) {
+          console.log('✅ WhatsApp сообщение отправлено через Green API!');
+          console.log(`   ID сообщения: ${responseData.idMessage}`);
+          console.log('===============================================\n');
+          return true;
+        } else {
+          console.error('❌ Green API ошибка:', response.status, responseData);
+        }
+      } catch (error: any) {
+        console.error('❌ Green API запрос не удался:', error.message);
+      }
     }
 
-    const response = await fetch(`https://api.green-api.com/waInstance${greenApiId}/sendMessage/${greenApiToken}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chatId: `${cleanPhone}@c.us`,
-        message: message
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Green API error: ${response.statusText}`);
+    // ПРИОРИТЕТ 2: Пробуем Twilio WhatsApp API если настроен
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const twilioWhatsAppFrom = process.env.TWILIO_WHATSAPP_FROM;
+    
+    if (twilioAccountSid && twilioAuthToken && twilioWhatsAppFrom) {
+      try {
+        console.log('📱 Пытаюсь отправить через Twilio...');
+        const twilio = require('twilio');
+        const client = twilio(twilioAccountSid, twilioAuthToken);
+        
+        const result = await client.messages.create({
+          from: twilioWhatsAppFrom,
+          to: `whatsapp:+${cleanPhone}`,
+          body: message
+        });
+        
+        console.log('✅ WhatsApp сообщение отправлено через Twilio!');
+        console.log(`   SID: ${result.sid}`);
+        console.log('===============================================\n');
+        return true;
+      } catch (error: any) {
+        console.error('❌ Twilio ошибка:', error.message);
+      }
     }
-    */
 
-    // Если API не настроен, возвращаем false
-    console.warn('⚠️  WhatsApp API not configured. Message not sent. Configure TWILIO or GREEN_API credentials.');
+    // Если ничего не настроено - показываем инструкцию
+    console.warn('\n⚠️  WhatsApp API НЕ НАСТРОЕН!');
+    console.warn('📱 Сообщение НЕ будет отправлено автоматически.');
+    console.warn('\n🔧 БЫСТРАЯ НАСТРОЙКА (5 минут):');
+    console.warn('   1. Зайди на https://green-api.com');
+    console.warn('   2. Зарегистрируйся (бесплатно)');
+    console.warn('   3. Получи idInstance и apiTokenInstance');
+    console.warn('   4. Добавь в nodejs/.env:');
+    console.warn('      GREEN_API_ID=твой_id');
+    console.warn('      GREEN_API_TOKEN=твой_token');
+    console.warn('   5. Перезапусти backend');
+    console.warn('\n🔗 Ссылка для ручной отправки (временно):');
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    console.warn(`   ${whatsappUrl}`);
+    console.warn('===============================================\n');
+    
     return false;
 
   } catch (error: any) {
-    console.error('❌ Error sending WhatsApp message:', error);
+    console.error('❌ Ошибка отправки WhatsApp сообщения:', error);
     return false;
   }
 }
