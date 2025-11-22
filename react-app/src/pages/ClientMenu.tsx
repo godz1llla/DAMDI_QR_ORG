@@ -25,6 +25,12 @@ const ClientMenu: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCartModal, setShowCartModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [orderType, setOrderType] = useState<'DINE_IN' | 'DELIVERY'>('DINE_IN');
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryData, setDeliveryData] = useState({
+    address: '',
+    phone: '',
+  });
 
   useEffect(() => {
     if (restaurantId) {
@@ -113,23 +119,60 @@ const ClientMenu: React.FC = () => {
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
 
+    // Если доставка, показываем модалку с адресом и телефоном
+    if (orderType === 'DELIVERY') {
+      setShowCartModal(false);
+      setShowDeliveryModal(true);
+      return;
+    }
+
+    // Для заказа в ресторане сразу оформляем
+    await createOrder();
+  };
+
+  const createOrder = async () => {
+    if (cart.length === 0) return;
+
+    // Валидация для доставки
+    if (orderType === 'DELIVERY') {
+      if (!deliveryData.address.trim() || !deliveryData.phone.trim()) {
+        alert('Пожалуйста, заполните адрес и телефон для доставки');
+        return;
+      }
+    }
+
     setPlacingOrder(true);
     try {
-      const res = await ordersApi.create({
+      const orderData: any = {
         restaurant_id: restaurantId,
-        table_id: tableId,
+        order_type: orderType,
         items: cart.map((item) => ({
           menu_item_id: item.id,
           quantity: item.quantity,
         })),
-      });
+      };
+
+      // Добавляем данные в зависимости от типа заказа
+      if (orderType === 'DINE_IN') {
+        orderData.table_id = tableId;
+      } else {
+        orderData.customer_phone = deliveryData.phone;
+        orderData.delivery_address = deliveryData.address;
+      }
+
+      const res = await ordersApi.create(orderData);
 
       if (res.success) {
         setCart([]);
         setShowCartModal(false);
-        alert(
-          `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nОфициант скоро подойдёт к вашему столику.`
-        );
+        setShowDeliveryModal(false);
+        setDeliveryData({ address: '', phone: '' });
+        
+        const message = orderType === 'DELIVERY'
+          ? `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nЗаказ будет доставлен по адресу: ${deliveryData.address}`
+          : `Заказ №${res.order_id} успешно создан!\n\nСумма: ${parseFloat(res.total_amount.toString()).toLocaleString('ru-RU')} ₸\n\nОфициант скоро подойдёт к вашему столику.`;
+        
+        alert(message);
       } else {
         alert('Ошибка: ' + res.message);
       }
@@ -157,7 +200,57 @@ const ClientMenu: React.FC = () => {
       <div className="mobile-view">
         <div className="menu-header">
           <h1 className="restaurant-name">{restaurantName}</h1>
-          <p className="table-info">Столик №{tableId}</p>
+          
+          {/* Переключатель типа заказа */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', justifyContent: 'center' }}>
+            <button
+              className={`order-type-btn ${orderType === 'DINE_IN' ? 'active' : ''}`}
+              onClick={() => {
+                setOrderType('DINE_IN');
+                setDeliveryData({ address: '', phone: '' });
+              }}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: '2px solid',
+                borderColor: orderType === 'DINE_IN' ? 'var(--orange-primary)' : 'var(--border-color)',
+                background: orderType === 'DINE_IN' ? 'var(--orange-primary)' : 'white',
+                color: orderType === 'DINE_IN' ? 'white' : 'var(--text-dark)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              🍽️ В ресторане
+            </button>
+            <button
+              className={`order-type-btn ${orderType === 'DELIVERY' ? 'active' : ''}`}
+              onClick={() => setOrderType('DELIVERY')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: '2px solid',
+                borderColor: orderType === 'DELIVERY' ? 'var(--orange-primary)' : 'var(--border-color)',
+                background: orderType === 'DELIVERY' ? 'var(--orange-primary)' : 'white',
+                color: orderType === 'DELIVERY' ? 'white' : 'var(--text-dark)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              🚚 Доставка
+            </button>
+          </div>
+
+          {orderType === 'DINE_IN' && (
+            <p className="table-info">Столик №{tableId}</p>
+          )}
+          {orderType === 'DELIVERY' && (
+            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+              📍 Заказ на доставку
+            </p>
+          )}
+
           <div className="search-bar">
             <span>🔍</span>
             <input
@@ -275,6 +368,108 @@ const ClientMenu: React.FC = () => {
             >
               {placingOrder ? 'Оформляем...' : 'Оформить заказ'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно для доставки */}
+      {showDeliveryModal && (
+        <div
+          className={`modal-overlay visible`}
+          onClick={(e) => e.target === e.currentTarget && setShowDeliveryModal(false)}
+        >
+          <div className="cart-modal" style={{ maxWidth: '500px' }}>
+            <div className="cart-header">
+              <h2>Данные для доставки</h2>
+              <button className="close-cart" onClick={() => setShowDeliveryModal(false)}>
+                ×
+              </button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+                  📞 Номер телефона *
+                </label>
+                <input
+                  type="tel"
+                  placeholder="+7 777 123-45-67"
+                  value={deliveryData.phone}
+                  onChange={(e) => setDeliveryData({ ...deliveryData, phone: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                  }}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+                  📍 Адрес доставки *
+                </label>
+                <textarea
+                  placeholder="Укажите улицу, дом, квартиру"
+                  value={deliveryData.address}
+                  onChange={(e) => setDeliveryData({ ...deliveryData, address: e.target.value })}
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                  required
+                />
+              </div>
+              <div style={{ 
+                padding: '15px', 
+                background: 'var(--bg-page)', 
+                borderRadius: '8px',
+                marginBottom: '20px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span>Сумма заказа:</span>
+                  <span style={{ fontWeight: 600 }}>{getCartTotal().toLocaleString('ru-RU')} ₸</span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                  * После оформления заказа с вами свяжется ресторан для подтверждения
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: '0 20px 20px' }}>
+              <button
+                className="order-button"
+                onClick={createOrder}
+                disabled={placingOrder || !deliveryData.address.trim() || !deliveryData.phone.trim()}
+                style={{ width: '100%' }}
+              >
+                {placingOrder ? 'Оформляем заказ...' : 'Подтвердить заказ'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeliveryModal(false);
+                  setShowCartModal(true);
+                }}
+                style={{
+                  width: '100%',
+                  marginTop: '10px',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  background: 'white',
+                  color: 'var(--text-dark)',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Назад к корзине
+              </button>
+            </div>
           </div>
         </div>
       )}

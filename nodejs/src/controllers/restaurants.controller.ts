@@ -175,11 +175,11 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
       return res.status(403).json({ success: false, message: 'Restaurant access required' });
     }
 
-    const { name, address, phone } = req.body;
+    const { name, address, phone, whatsapp_number } = req.body;
 
     await pool.execute(
-      'UPDATE restaurants SET name = ?, address = ?, phone = ?, updated_at = NOW() WHERE id = ?',
-      [name, address, phone, req.user.restaurantId]
+      'UPDATE restaurants SET name = ?, address = ?, phone = ?, whatsapp_number = ?, updated_at = NOW() WHERE id = ?',
+      [name, address, phone, whatsapp_number || null, req.user.restaurantId]
     );
 
     res.json({ success: true, message: 'Ресторан обновлен' });

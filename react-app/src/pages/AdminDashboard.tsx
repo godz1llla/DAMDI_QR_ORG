@@ -60,6 +60,7 @@ const AdminDashboard: React.FC = () => {
     name: '',
     address: '',
     phone: '',
+    whatsapp_number: '',
     plan: '',
   });
   const [statsPeriod, setStatsPeriod] = useState<'today' | 'week' | 'month'>('today');
@@ -183,6 +184,7 @@ const AdminDashboard: React.FC = () => {
           name: res.restaurant.name,
           address: res.restaurant.address || '',
           phone: res.restaurant.phone || '',
+          whatsapp_number: res.restaurant.whatsapp_number || '',
           plan: res.restaurant.plan === 'PREMIUM' ? 'Premium' : 'Бесплатный',
         });
       }
@@ -391,6 +393,7 @@ const AdminDashboard: React.FC = () => {
         name: settings.name,
         address: settings.address,
         phone: settings.phone,
+        whatsapp_number: settings.whatsapp_number,
       });
       alert('Настройки успешно сохранены');
       loadRestaurant();
@@ -744,6 +747,22 @@ const AdminDashboard: React.FC = () => {
                     onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
                     style={{ width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
                   />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>
+                    WhatsApp номер <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 400 }}>(для уведомлений о заказах)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="whatsapp_number"
+                    placeholder="+7 777 123-45-67"
+                    value={settings.whatsapp_number}
+                    onChange={(e) => setSettings({ ...settings, whatsapp_number: e.target.value })}
+                    style={{ width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                  />
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '5px' }}>
+                    На этот номер будут приходить уведомления о новых заказах
+                  </p>
                 </div>
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Тарифный план</label>

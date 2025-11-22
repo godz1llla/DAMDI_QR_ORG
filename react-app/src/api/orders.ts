@@ -3,7 +3,10 @@ import { Order, OrderStatus } from '../types';
 
 export interface CreateOrderRequest {
   restaurant_id: number;
-  table_id: number;
+  table_id?: number;
+  order_type?: 'DINE_IN' | 'DELIVERY';
+  customer_phone?: string;
+  delivery_address?: string;
   items: Array<{
     menu_item_id: number;
     quantity: number;

@@ -1,13 +1,26 @@
 import { Request, Response } from 'express';
 import pool from '../config/database';
 import { OrderStatus, UserRole } from '../types';
+import { sendWhatsAppMessage, formatOrderForWhatsApp } from '../utils/whatsapp';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { restaurant_id, table_id, items } = req.body;
+    const { restaurant_id, table_id, items, order_type, customer_phone, delivery_address } = req.body;
 
-    if (!restaurant_id || !table_id || !items || items.length === 0) {
-      return res.status(400).json({ success: false, message: 'Обязательные поля: restaurant_id, table_id, items' });
+    // Проверка обязательных полей
+    if (!restaurant_id || !items || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Обязательные поля: restaurant_id, items' });
+    }
+
+    // Для заказа в ресторане нужен table_id, для доставки - адрес и телефон
+    const orderType = order_type || 'DINE_IN';
+    if (orderType === 'DINE_IN' && !table_id) {
+      return res.status(400).json({ success: false, message: 'Для заказа в ресторане требуется table_id' });
+    }
+    if (orderType === 'DELIVERY') {
+      if (!customer_phone || !delivery_address) {
+        return res.status(400).json({ success: false, message: 'Для доставки требуются customer_phone и delivery_address' });
+      }
     }
 
     const connection = await pool.getConnection();
@@ -16,9 +29,10 @@ export const createOrder = async (req: Request, res: Response) => {
     try {
       let totalAmount = 0;
 
+      // Получаем данные о блюдах и считаем сумму
       for (const item of items) {
         const [menuRows] = await connection.execute(
-          'SELECT price FROM menu_items WHERE id = ? AND restaurant_id = ? AND is_available = TRUE LIMIT 1',
+          'SELECT price, name FROM menu_items WHERE id = ? AND restaurant_id = ? AND is_available = TRUE LIMIT 1',
           [item.menu_item_id, restaurant_id]
         );
 
@@ -28,31 +42,84 @@ export const createOrder = async (req: Request, res: Response) => {
           return res.status(400).json({ success: false, message: 'Некорректный элемент меню' });
         }
 
-        totalAmount += menuItems[0].price * item.quantity;
+        totalAmount += parseFloat(menuItems[0].price.toString()) * item.quantity;
       }
 
+      // Определяем table_id для доставки (можем использовать NULL или создать виртуальный столик)
+      const finalTableId = orderType === 'DELIVERY' ? null : table_id;
+
+      // Создаем заказ
       const [orderResult] = await connection.execute(
-        'INSERT INTO orders (restaurant_id, table_id, status, total_amount) VALUES (?, ?, ?, ?)',
-        [restaurant_id, table_id, OrderStatus.NEW, totalAmount]
+        'INSERT INTO orders (restaurant_id, table_id, order_type, customer_phone, delivery_address, status, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [restaurant_id, finalTableId, orderType, customer_phone || null, delivery_address || null, OrderStatus.NEW, totalAmount]
       );
 
       const orderId = (orderResult as any).insertId;
+      const orderItems: Array<{ name: string; quantity: number; price: number }> = [];
 
+      // Создаем элементы заказа
       for (const item of items) {
         const [menuRows] = await connection.execute(
-          'SELECT price FROM menu_items WHERE id = ? LIMIT 1',
+          'SELECT price, name FROM menu_items WHERE id = ? LIMIT 1',
           [item.menu_item_id]
         );
         const menuItems = menuRows as any[];
-        const price = menuItems[0].price;
+        const price = parseFloat(menuItems[0].price.toString());
+        const name = menuItems[0].name;
 
         await connection.execute(
           'INSERT INTO order_items (order_id, menu_item_id, quantity, price, notes) VALUES (?, ?, ?, ?, ?)',
           [orderId, item.menu_item_id, item.quantity, price, item.notes || null]
         );
+
+        orderItems.push({ name, quantity: item.quantity, price });
       }
 
       await connection.commit();
+
+      // Получаем WhatsApp номер ресторана и отправляем уведомление
+      let tableNumber = null;
+      if (finalTableId) {
+        const [tableRows] = await connection.execute(
+          'SELECT table_number FROM tables WHERE id = ? LIMIT 1',
+          [finalTableId]
+        );
+        const tables = tableRows as any[];
+        if (tables.length > 0) {
+          tableNumber = tables[0].table_number;
+        }
+      }
+
+      // Получаем WhatsApp номер ресторана
+      const [restaurantRows] = await connection.execute(
+        'SELECT whatsapp_number, name FROM restaurants WHERE id = ? LIMIT 1',
+        [restaurant_id]
+      );
+      const restaurants = restaurantRows as any[];
+      const restaurant = restaurants[0];
+
+      connection.release();
+
+      // Отправляем WhatsApp уведомление (после освобождения connection)
+      if (restaurant && restaurant.whatsapp_number) {
+        try {
+          const orderData = {
+            id: orderId,
+            order_type: orderType,
+            total_amount: totalAmount,
+            customer_phone: customer_phone || undefined,
+            delivery_address: delivery_address || undefined,
+            table_number: tableNumber || undefined,
+            items: orderItems
+          };
+
+          const whatsappMessage = formatOrderForWhatsApp(orderData);
+          await sendWhatsAppMessage(restaurant.whatsapp_number, whatsappMessage);
+        } catch (whatsappError) {
+          // Не прерываем процесс если WhatsApp не отправился
+          console.error('Error sending WhatsApp notification:', whatsappError);
+        }
+      }
 
       res.json({
         success: true,
@@ -62,9 +129,8 @@ export const createOrder = async (req: Request, res: Response) => {
       });
     } catch (error) {
       await connection.rollback();
-      throw error;
-    } finally {
       connection.release();
+      throw error;
     }
   } catch (error: any) {
     console.error('Create order error:', error);

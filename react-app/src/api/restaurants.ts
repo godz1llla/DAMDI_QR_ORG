@@ -25,7 +25,7 @@ export const restaurantsApi = {
     const response = await apiClient.get('/restaurants/my');
     return response.data;
   },
-  updateMy: async (data: { name?: string; address?: string; phone?: string }): Promise<{ success: boolean; message: string }> => {
+  updateMy: async (data: { name?: string; address?: string; phone?: string; whatsapp_number?: string }): Promise<{ success: boolean; message: string }> => {
     const response = await apiClient.put('/restaurants/my', data);
     return response.data;
   },
