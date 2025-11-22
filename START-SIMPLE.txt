@@ -1,0 +1,22 @@
+╔══════════════════════════════════════════════════════════╗
+║              КАК ЗАПУСТИТЬ ПРОЕКТ (3 ШАГА)                  ║
+╚══════════════════════════════════════════════════════════╝
+
+ШАГ 1: Запустить MySQL (один раз, если еще не запущен)
+   cd /home/hubtech/Documents/DAMDIQRRR
+   sudo ./setup-mysql-simple.sh
+
+ШАГ 2: Запустить Backend (терминал 1)
+   cd /home/hubtech/Documents/DAMDIQRRR/nodejs
+   npm run dev
+
+ШАГ 3: Запустить Frontend (терминал 2)
+   cd /home/hubtech/Documents/DAMDIQRRR/react-app
+   npm run dev
+
+ОТКРЫТЬ: http://localhost:5173
+
+ВОЙТИ:
+   Email: admin@demo.com
+   Пароль: admin123
+

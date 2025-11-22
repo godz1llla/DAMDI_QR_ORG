@@ -1042,7 +1042,7 @@
                         card.innerHTML = `
                             <div class="table-number">№${table.table_number}</div>
                             <div class="qr-placeholder" id="qr-${table.id}">
-                                <span style="font-size: 14px; color: var(--text-secondary);">Загрузка QR...</span>
+                                <div style="font-size: 14px; color: var(--text-secondary);">Загрузка...</div>
                             </div>
                             <button onclick="downloadQR(${table.id}, '${table.table_number}')" class="btn-primary" style="width: 100%; margin-bottom: 10px;">📥 Скачать QR</button>
                             <button onclick="viewMenu(${table.id})" style="width: 100%; padding: 10px; background: white; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; margin-bottom: 10px;">👁️ Просмотр меню</button>
@@ -1081,10 +1081,7 @@
         }
 
         function downloadQR(tableId, tableNumber) {
-            // Открываем endpoint для скачивания QR-кода
             const downloadUrl = `/api/qr/generate.php?table_id=${tableId}`;
-            
-            // Создаём временную ссылку для скачивания
             const link = document.createElement('a');
             link.href = downloadUrl;
             link.download = `qr-table-${tableNumber}.png`;
@@ -1094,7 +1091,6 @@
         }
 
         function viewMenu(tableId) {
-            // Открываем меню в новой вкладке
             const menuUrl = `${window.location.origin}/menu/client.html?restaurant_id=1&table_id=${tableId}`;
             window.open(menuUrl, '_blank');
         }
@@ -1109,14 +1105,8 @@
                     if (container) {
                         container.innerHTML = `<img src="${data.qr_code}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;">`;
                     }
-                } else {
-                    const container = document.getElementById(`qr-${tableId}`);
-                    if (container) {
-                        container.innerHTML = '<span style="font-size: 48px;">📱</span>';
-                    }
                 }
             } catch (error) {
-                console.error('Error loading QR preview:', error);
                 const container = document.getElementById(`qr-${tableId}`);
                 if (container) {
                     container.innerHTML = '<span style="font-size: 48px;">📱</span>';

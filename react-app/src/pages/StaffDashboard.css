@@ -1,0 +1,293 @@
+:root {
+  --blue-primary: #2979FF;
+  --blue-light-bg: #EAF2FE;
+  --yellow-primary: #FDBA12;
+  --yellow-light-bg: #FFFBEB;
+  --green-primary: #34A853;
+  --green-light-bg: #E6F6E9;
+  --bg-page: #F7F8FC;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-dark: #222222;
+  --text-secondary: #666666;
+  --border-color: #ECEEF3;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --border-radius-card: 16px;
+  --border-radius-small: 8px;
+  --shadow-card: 0 4px 15px rgba(220, 220, 230, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.staff-dashboard {
+  font-family: var(--font-family);
+  background-color: var(--bg-page);
+  color: var(--text-dark);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.staff-dashboard * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.staff-dashboard .main-header {
+  background-color: var(--bg-header);
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.staff-dashboard .panel-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.staff-dashboard .panel-info .logo {
+  width: 40px;
+  height: 40px;
+  background-color: var(--blue-primary);
+  border-radius: var(--border-radius-small);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+}
+
+.staff-dashboard .panel-info .title {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.staff-dashboard .panel-info .subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.staff-dashboard .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.staff-dashboard .update-status {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.staff-dashboard .action-button {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-small);
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.staff-dashboard .action-button:hover {
+  background-color: #f5f5f5;
+}
+
+.staff-dashboard .board-container {
+  flex-grow: 1;
+  padding: 20px 40px 30px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.staff-dashboard .info-banner {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: var(--blue-light-bg);
+  padding: 15px 20px;
+  border-radius: var(--border-radius-small);
+  color: var(--blue-primary);
+  font-size: 14px;
+  border: 1px solid #B4D1FB;
+  flex-shrink: 0;
+}
+
+.staff-dashboard .info-banner .icon {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.staff-dashboard .info-banner p {
+  color: #2A5699;
+  margin-top: 4px;
+}
+
+.staff-dashboard .kanban-board {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.staff-dashboard .board-column {
+  background-color: #FDFDFD;
+  border-radius: var(--border-radius-card);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.staff-dashboard .column-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.staff-dashboard .board-column.new .column-header {
+  border-top: 4px solid var(--yellow-primary);
+}
+
+.staff-dashboard .board-column.cooking .column-header {
+  border-top: 4px solid var(--blue-primary);
+}
+
+.staff-dashboard .board-column.done .column-header {
+  border-top: 4px solid var(--green-primary);
+}
+
+.staff-dashboard .counter {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: white;
+  font-weight: 700;
+}
+
+.staff-dashboard .board-column.new .counter {
+  background-color: var(--yellow-primary);
+}
+
+.staff-dashboard .board-column.cooking .counter {
+  background-color: var(--blue-primary);
+}
+
+.staff-dashboard .board-column.done .counter {
+  background-color: var(--green-primary);
+}
+
+.staff-dashboard .cards-wrapper {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex-grow: 1;
+}
+
+.staff-dashboard .order-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-card);
+  box-shadow: 0 2px 8px rgba(220, 220, 230, 0.4);
+  padding: 20px;
+}
+
+.staff-dashboard .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.staff-dashboard .card-header .table-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.staff-dashboard .card-header .time-ago {
+  padding: 5px 10px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+}
+
+.staff-dashboard .order-items-list .item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.staff-dashboard .order-items-list .item:last-child {
+  margin-bottom: 0;
+}
+
+.staff-dashboard .order-items-list .price {
+  color: var(--text-secondary);
+}
+
+.staff-dashboard .card-footer {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.staff-dashboard .card-footer .total {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.staff-dashboard .card-footer .btn-action {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius-small);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.staff-dashboard .card-footer .btn-action:hover {
+  opacity: 0.9;
+}
+
+.staff-dashboard .btn-blue {
+  background-color: var(--blue-primary);
+  color: white;
+}
+
+.staff-dashboard .btn-green {
+  background-color: var(--green-primary);
+  color: white;
+}
+
+.staff-dashboard .btn-white {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+}

@@ -1,0 +1,45 @@
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.input-error,
+.textarea.input-error {
+  border-color: var(--danger-color);
+}
+
+.input-error-message {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--danger-color);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+

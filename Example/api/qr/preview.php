@@ -61,4 +61,3 @@ try {
     echo json_encode(array('success' => false, 'message' => 'Server error'));
     error_log("QR Preview Error: " . $e->getMessage());
 }
-

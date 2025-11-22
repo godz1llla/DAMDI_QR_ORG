@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS restaurants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    owner_id INT NULL,
+    owner_id INT NOT NULL,
     plan ENUM('FREE', 'PREMIUM') DEFAULT 'FREE',
     address VARCHAR(500),
     phone VARCHAR(50),
