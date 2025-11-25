@@ -5,12 +5,10 @@
   --bg-card: #FFFFFF;
   --bg-input: #F4F4F4;
   --bg-button-primary: #1E1E1E;
-  --bg-notification: #FFF5EB;
   --text-dark: #333333;
   --text-secondary: #666666;
   --text-light: #FFFFFF;
   --border-light: #E0E0E0;
-  --notification-text: #D48432;
   --border-radius-main: 8px;
 }
 
@@ -78,24 +76,6 @@
   text-align: left;
 }
 
-.login-page .notification {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  background-color: var(--bg-notification);
-  padding: 15px;
-  border-radius: var(--border-radius-main);
-  margin-top: 25px;
-  color: var(--notification-text);
-  font-size: 14px;
-  text-align: left;
-}
-
-.login-page .notification span {
-  font-size: 24px;
-  font-weight: bold;
-}
-
 /* --- 3. Стили формы --- */
 .login-page .card h2 {
   font-size: 24px;
@@ -157,44 +137,3 @@
   cursor: not-allowed;
 }
 
-/* --- 4. Демо-доступ --- */
-.login-page .demo-section {
-  margin-top: 30px;
-  text-align: left;
-}
-
-.login-page .demo-section p {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-bottom: 15px;
-}
-
-.login-page .demo-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.login-page .btn-demo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 16px;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--border-radius-main);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-align: left;
-}
-
-.login-page .btn-demo:hover {
-  background-color: var(--bg-input);
-}
-
-.login-page .btn-demo span {
-  font-size: 20px;
-}

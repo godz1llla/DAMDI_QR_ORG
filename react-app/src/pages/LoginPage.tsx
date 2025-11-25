@@ -29,21 +29,6 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleDemoClick = async (demoEmail: string, demoPassword: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    
-    try {
-      const response = await loginAuth(demoEmail, demoPassword);
-      if (response.redirect) {
-        window.location.href = response.redirect;
-      } else {
-        navigate('/dashboard/admin');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ошибка входа');
-    }
-  };
 
   return (
     <div className="login-page">
@@ -100,38 +85,6 @@ const LoginPage: React.FC = () => {
               </div>
             )}
           </form>
-
-          <div className="demo-section">
-            <p>Демо-доступ:</p>
-            <div className="demo-buttons">
-              <button
-                type="button"
-                className="btn-demo"
-                onClick={() => handleDemoClick('superadmin@damdiqr.com', 'admin123')}
-              >
-                <span>👑</span> Супер-администратор
-              </button>
-              <button
-                type="button"
-                className="btn-demo"
-                onClick={() => handleDemoClick('admin@demo.com', 'admin123')}
-              >
-                <span>🏢</span> Владелец заведения
-              </button>
-              <button
-                type="button"
-                className="btn-demo"
-                onClick={() => handleDemoClick('staff@demo.com', 'staff123')}
-              >
-                <span>🧑‍🍳</span> Сотрудник
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="notification">
-          <span>ψ</span>
-          <div>Это демо-версия приложения с тестовыми данными <br /> Все изменения сохраняются только в памяти браузера</div>
         </div>
       </main>
     </div>
